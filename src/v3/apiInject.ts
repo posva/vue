@@ -1,5 +1,5 @@
 import { isFunction, warn } from 'core/util'
-import { currentInstance } from './currentInstance'
+import { currentInstance, getCurrentInstance } from './currentInstance'
 import type { Component } from 'types/component'
 
 export interface InjectionKey<T> extends Symbol {}
@@ -68,4 +68,9 @@ export function inject(
   } else if (__DEV__) {
     warn(`inject() can only be used inside setup() or functional components.`)
   }
+}
+
+// Not implemented https://github.com/vuejs/core/pull/8111, falls back to getCurrentInstance()
+export function hasInjectionContext() {
+  return !!getCurrentInstance()
 }

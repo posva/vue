@@ -6,8 +6,9 @@ import {
 } from './reactive'
 import type { IfAny } from 'types/utils'
 import Dep from 'core/observer/dep'
-import { warn, isArray, def, isServerRendering } from 'core/util'
+import { warn, isArray, def, isServerRendering, isFunction } from 'core/util'
 import { TrackOpTypes, TriggerOpTypes } from './operations'
+import { ComputedRef, WritableComputedRef } from './computed'
 
 declare const RefSymbol: unique symbol
 export declare const RawSymbol: unique symbol
@@ -90,8 +91,62 @@ export function triggerRef(ref: Ref) {
   }
 }
 
-export function unref<T>(ref: T | Ref<T>): T {
-  return isRef(ref) ? (ref.value as any) : ref
+/**
+ * A writable ref or computed. Can be read with {@link toValue} or {@link unref}.
+ */
+export type MaybeRef<T = unknown> =
+  | T
+  | Ref<T>
+  | ShallowRef<T>
+  | WritableComputedRef<T>
+
+/**
+ * A readonly value that can also be a ref, computed or getter.
+ * Should be read with {@link toValue}.
+ */
+export type MaybeRefOrGetter<T = unknown> =
+  | MaybeRef<T>
+  | ComputedRef<T>
+  | (() => T)
+
+/**
+ * Returns the inner value if the argument is a ref, otherwise return the
+ * argument itself. This is a sugar function for
+ * `val = isRef(val) ? val.value : val`.
+ *
+ * @example
+ * ```js
+ * function useFoo(x: number | Ref<number>) {
+ *   const unwrapped = unref(x)
+ *   // unwrapped is guaranteed to be number now
+ * }
+ * ```
+ *
+ * @param ref - Ref or plain value to be converted into the plain value.
+ * @see {@link https://vuejs.org/api/reactivity-utilities.html#unref}
+ */
+export function unref<T>(ref: MaybeRef<T> | ComputedRef<T>): T {
+  return isRef(ref) ? ref.value : ref
+}
+
+/**
+ * Normalizes values / refs / getters to values.
+ * This is similar to {@link unref}, except that it also normalizes getters.
+ * If the argument is a getter, it will be invoked and its return value will
+ * be returned.
+ *
+ * @example
+ * ```js
+ * toValue(1) // 1
+ * toValue(ref(1)) // 1
+ * toValue(() => 1) // 1
+ * ```
+ *
+ * @param source - A getter, an existing ref, or a non-function value.
+ * @see {@link https://vuejs.org/api/reactivity-utilities.html#tovalue}
+ */
+export function toValue<T>(source: MaybeRefOrGetter<T>): T {
+  return isFunction(source) ? source() : unref(source)
 }
 
 export function proxyRefs<T extends object>(

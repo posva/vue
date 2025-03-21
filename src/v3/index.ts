@@ -11,10 +11,13 @@ export {
   toRef,
   toRefs,
   unref,
+  toValue,
   proxyRefs,
   customRef,
   triggerRef,
   Ref,
+  MaybeRef,
+  MaybeRefOrGetter,
   ToRef,
   ToRefs,
   UnwrapRef,
@@ -73,7 +76,7 @@ export { DebuggerOptions, DebuggerEvent, DebuggerEventExtraInfo } from './debug'
 
 export { TrackOpTypes, TriggerOpTypes } from './reactivity/operations'
 
-export { provide, inject, InjectionKey } from './apiInject'
+export { provide, inject, InjectionKey, hasInjectionContext } from './apiInject'
 
 export { h } from './h'
 export { getCurrentInstance } from './currentInstance'
